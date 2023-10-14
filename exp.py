@@ -56,8 +56,7 @@ class Exp:
                     logger.info(f'\tspeed: {speed:.4f}s/iter; left time: {left_time:.4f}s')
                     count = 0
                     time_now = time.time()
-            logger.info("Epoch: {} cost time: {}".format(
-                iters + 1, time.time() - epoch_time))
+            logger.info("Epoch: {} cost time: {}".format(iters + 1, time.time() - epoch_time))
             val_loss = self.valid(val_loader, model, device)
             logger.info(f"Epoch {iters + 1}, train_loss: {np.mean(losses)}, val_loss: {val_loss}")
             early_stopping(val_loss, model, self.configs.save_id)
