@@ -17,8 +17,8 @@ parser = argparse.ArgumentParser(description='ImageGeneration')
 # Experiment settings
 parser.add_argument('--dataset', type=str, default='MNIST')
 parser.add_argument('--root_path', type=str, default='C:/Users/98311/Desktop/dataset/Images')
-parser.add_argument('--training', type=bool, default=False)
-parser.add_argument('--batch_size', type=int, default=800)
+parser.add_argument('--training', type=bool, default=True)
+parser.add_argument('--batch_size', type=int, default=1000)
 parser.add_argument('--eval_freq', type=int, default=10)
 parser.add_argument('--exp_iters', type=int, default=1)
 parser.add_argument('--version', type=str, default="run")
@@ -52,6 +52,8 @@ parser.add_argument('--devices', type=str, default='0,1',
 configs = parser.parse_args()
 log_path = f"./results/{configs.version}/{configs.dataset}.log"
 configs.log_path = log_path
+results_path = f"./results/{configs.version}/{configs.dataset}.pdf"
+configs.results_path = results_path
 if not os.path.exists(f"./results"):
     os.mkdir("./results")
 if not os.path.exists(f"./results/{configs.version}"):
