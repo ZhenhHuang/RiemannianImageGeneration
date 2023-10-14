@@ -78,7 +78,7 @@ def getLoader(configs, flag, transform=None):
         drop_last = True
         train = False
 
-    dataset = getDataset(configs, flag, transform)
+    dataset = getDataset(configs, train, transform)
     print(f"{flag}: {len(dataset)}")
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last)
     return dataset, data_loader
