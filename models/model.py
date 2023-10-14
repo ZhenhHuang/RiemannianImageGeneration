@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.basic import VAEEncoder, VAEDecoder
+from models.basic import VAEEncoder, VAEDecoder, VAELoss
 
 
 def sample(mu, log_std):
@@ -50,3 +50,6 @@ class CVAE(nn.Module):
         z = torch.randn(labels.shape[0], self.latent_dim).to(device)
         z = self.decoder(z, y)
         return z
+
+    def loss(self, x, x_rec, mean, log_std, beta=1.0):
+        return VAELoss(beta)(x, x_rec, mean, log_std)
