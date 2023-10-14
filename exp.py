@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 from models.model import CVAE
 from data_handler.data_loader import getLoader
+from data_handler.dataset import datasize
 from logger import create_logger
 from utils import EarlyStopping, adjust_learning_rate
 import time
@@ -30,6 +31,7 @@ class Exp:
         self.model = model
         optimizer = torch.optim.Adam(model.parameters(), lr=self.configs.lr, weight_decay=self.configs.w_decay)
         early_stopping = EarlyStopping(self.configs.patience)
+        epochs = self.configs.epochs
         for iters in range(epochs):
             losses = []
             count = 0

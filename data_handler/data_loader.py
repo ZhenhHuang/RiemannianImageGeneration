@@ -88,7 +88,7 @@ def getDataset(configs, train, transform):
     if configs.dataset == 'caltech101':
         return Caltech101(configs.root_path, configs.data_path, flag, configs.size, transform=transform)
 
-    elif configs.dataset == 'mnist':
+    elif configs.dataset in ['MNIST', 'USPS']:
         return load_handwrite_digit(configs, train=train, download=configs.download)
 
     elif configs.dataset == 'cifar-10':
