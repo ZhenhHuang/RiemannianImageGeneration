@@ -83,7 +83,10 @@ class Exp:
     def eval(self, test_labels):
         state_dict_path = f'./checkpoints/{self.configs.save_id}'
         state_dict = torch.load(state_dict_path)
-        model = self.model
+        args = datasize[self.configs.dataset]
+        model = CVAE(n_layers=self.configs.n_layers, n_classes=10, in_dim=args["in_dim"],
+                     hidden_dims=self.configs.hidden_dims, out_dim=self.configs.out_dim,
+                     cond_dim=self.configs.cond_dim, CWH=args['size'], act_func=self.configs.act_func).to(self.device)
         model.load_state_dict(state_dict)
         model.eval()
         visualize(model, test_labels, save_path=self.configs.results_path)
