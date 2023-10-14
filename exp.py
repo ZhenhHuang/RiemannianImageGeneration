@@ -32,7 +32,7 @@ class Exp:
         optimizer = torch.optim.Adam(model.parameters(), lr=self.configs.lr, weight_decay=self.configs.w_decay)
         early_stopping = EarlyStopping(self.configs.patience)
         epochs = self.configs.epochs
-        for iters in range(epochs):
+        for epoch in range(epochs):
             losses = []
             count = 0
             epoch_time = time.time()
@@ -52,18 +52,18 @@ class Exp:
                 if i % 200 == 0:
                     logger.info(f"iter {i}, loss: {loss.item()}")
                     speed = (time.time() - time_now) / count
-                    left_time = speed * ((epochs - iters) * len(train_loader) - i)
+                    left_time = speed * ((epochs - epoch) * len(train_loader) - i)
                     logger.info(f'\tspeed: {speed:.4f}s/iter; left time: {left_time:.4f}s')
                     count = 0
                     time_now = time.time()
-            logger.info("Epoch: {} cost time: {}".format(iters + 1, time.time() - epoch_time))
+            logger.info("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             val_loss = self.valid(val_loader, model, device)
-            logger.info(f"Epoch {iters + 1}, train_loss: {np.mean(losses)}, val_loss: {val_loss}")
+            logger.info(f"Epoch {epoch + 1}, train_loss: {np.mean(losses)}, val_loss: {val_loss}")
             early_stopping(val_loss, model, self.configs.save_id)
             if early_stopping.early_stop:
                 logger.info("Early stopping")
                 break
-            adjust_learning_rate(optimizer, iters + 1, self.configs)
+            adjust_learning_rate(optimizer, epoch + 1, self.configs)
 
     def valid(self, test_loader, model, device):
         model.eval()
