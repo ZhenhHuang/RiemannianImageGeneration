@@ -63,6 +63,7 @@ class Exp:
             if early_stopping.early_stop:
                 logger.info("Early stopping")
                 break
+            adjust_learning_rate(optimizer, iters + 1, self.configs)
 
     def valid(self, test_loader, model, device):
         model.eval()

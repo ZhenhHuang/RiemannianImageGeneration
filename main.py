@@ -35,10 +35,11 @@ parser.add_argument('--act_func', type=str, default='relu')
 parser.add_argument('--hidden_dims', type=int, nargs='+', default=[500, 500, 2000], help='dimension of hidden layers')
 parser.add_argument('--out_dim', type=int, default=10, help='dimension of latent space')
 parser.add_argument('--cond_dim', type=int, default=16, help='dimension of embedding labels')
-parser.add_argument('--lr', type=float, default=0.01)
+parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--w_decay', type=float, default=5e-4)
 parser.add_argument('--kappa', type=float, default=-1.0, help='curvature of simple manifolds')
 parser.add_argument('--beta', type=float, default=1.0, help='coefficient of Beta-VAE')
+parser.add_argument('--learning_rate', type=float, default=1e-4)
 
 # GPU
 parser.add_argument('--use_gpu', action='store_false', help='use gpu')
