@@ -13,7 +13,8 @@ def visualize(model, labels, dev_str='cuda:0', figsize=(30, 30), save_path=None)
     num = len(labels)
     row = int(np.sqrt(num)) + 1
     for i in range(num):
-        plt.subplot(row, row, i+1)
+        ax = plt.subplot(row, row, i+1)
+        ax.set_title(f"Class: {labels[i].item()}")
         plt.imshow(images[i])
     if save_path is not None:
         plt.savefig(save_path)

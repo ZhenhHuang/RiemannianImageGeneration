@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='ImageGeneration')
 # Experiment settings
 parser.add_argument('--dataset', type=str, default='MNIST')
 parser.add_argument('--root_path', type=str, default='C:/Users/98311/Desktop/dataset/Images')
-parser.add_argument('--training', type=bool, default=True)
+parser.add_argument('--training', type=bool, default=False)
 parser.add_argument('--batch_size', type=int, default=800)
 parser.add_argument('--eval_freq', type=int, default=10)
 parser.add_argument('--exp_iters', type=int, default=1)
