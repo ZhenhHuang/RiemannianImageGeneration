@@ -15,12 +15,12 @@ def integrator(ode_func, x0, t, kappa):
     """
     Input:
         ode_func: f(t, x)
-        x0: (N, D)
+        x0: (B, C, H, W)
         t: (T)
         kappa: torch.tensor()
     Return:
-        xts: (T, N, D)
-        vts: (T, N, D)
+        xts: (T, B, C, H, W)
+        vts: (T, B, C, H, W)
     """
     t0s = t[:-1]
     t1s = t[1:]
