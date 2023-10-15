@@ -14,7 +14,7 @@ def ode_step(xt, vt, dt, kappa):
 def integrator(ode_func, x0, t, kappa):
     """
     Input:
-        ode_func: f(t, x)
+        ode_func: f(t, x) -> (1, B, C, H, W)
         x0: (B, C, H, W)
         t: (T)
         kappa: torch.tensor()
@@ -25,9 +25,9 @@ def integrator(ode_func, x0, t, kappa):
     t0s = t[:-1]
     t1s = t[1:]
     vts = []
-    xts = [x0]
+    xts = [x0.unsqueeze(0)]
 
-    xt = x0
+    xt = x0.unsqueeze(0)
     for t0, t1 in zip(t0s, t1s):
         dt = t1 - t0
         vt = ode_func(t0, xt)
@@ -37,7 +37,7 @@ def integrator(ode_func, x0, t, kappa):
         vts.append(vt)
         xts.append(xt)
     vts.append(ode_func(t1, xt))
-    return torch.stack(xts), torch.stack(vts)
+    return torch.concat(xts), torch.concat(vts)
 
 
 @torch.no_grad()
