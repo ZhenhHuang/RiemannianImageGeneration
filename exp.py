@@ -49,7 +49,7 @@ class Exp:
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-                if i % 200 == 0:
+                if i % self.configs.verbose_freq == 0:
                     logger.info(f"iter {i}, loss: {loss.item()}")
                     speed = (time.time() - time_now) / count
                     left_time = speed * ((epochs - epoch) * len(train_loader) - i)
