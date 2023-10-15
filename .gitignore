@@ -161,3 +161,4 @@ cython_debug/
 results/
 results/run/
 checkpoints/
+*.pdf
