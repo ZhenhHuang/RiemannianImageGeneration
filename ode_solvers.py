@@ -1,6 +1,6 @@
 import torch
-from geoopt.manifolds.stereographic.math import expmap, project, dist
-from torch.func import vjp, vmap
+from geoopt.manifolds.stereographic.math import expmap, logmap, project, dist
+from torch.autograd.functional import jacobian
 
 
 def ode_step(xt, vt, dt, kappa):
@@ -41,22 +41,24 @@ def integrator(ode_func, x0, t, kappa):
 
 
 @torch.no_grad()
-def solve_geodesic(x0, x1, t, kappa):
-    orig_dist = dist(x0, x1, k=kappa)
+def solve_geodesic(t, x0, x1, kappa):
+    """
+    Solve geodesic On Stereographic model.
+    :param t:  (T, )
+    :param x0: (B, C, H, W)
+    :param x1: (B, C, H, W)
+    :param kappa: torch.tensor([])
+    :return: [Xt, Vt] with shape (T, B, C, H, W)
+    """
+    x0 = x0.unsqueeze(0)
+    x1 = x1.unsqueeze(0)
+    t = t[:, None, None, None, None]
 
-    def odefunc(t, x):
-        del t
-
-        d, vjp_fn = vjp(lambda x: dist(x, x1, k=kappa), x)
-        dgradx = vjp_fn(torch.ones_like(d))[0]
-
-        dx = (
-                -orig_dist[..., None]
-                * dgradx
-                / torch.linalg.norm(dgradx, dim=-1, keepdim=True)
-                .pow(2)
-                .clamp(min=1e-20)
-        )
-        return dx
-
-    return integrator(odefunc, x0, t, kappa)
+    def geodesic(time):
+        if kappa == 0:
+            return x0 + t * (x1 - x0)
+        else:
+            return expmap(x0, time * logmap(x0, x1, k=kappa), k=kappa)
+    xt = geodesic(t)
+    dxt_dt = jacobian(geodesic, t).sum(-1)    # (T, B, C, H, W)
+    return xt, dxt_dt
