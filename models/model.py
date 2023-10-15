@@ -25,16 +25,23 @@ class CVAE(nn.Module):
         self.decoder = VAEDecoder(n_layers, out_dim, hidden_dims[::-1], in_dim, cond_dim, CWH, act_func)
         self.label_enc = nn.Embedding(n_classes, cond_dim)
 
-    def forward(self, x, y):
+    def encode(self, x, y=None):
+        y = self.label_enc(y)
+        mean, log_std = self.encoder(x, y)
+        z = sample(mean, log_std)
+        return z, y, mean, log_std
+
+    def decode(self, x, y=None):
+        return self.decoder(x, y)
+
+    def forward(self, x, y=None):
         """
         :param x: (B, C, H, W) or (B, H, W)
         :param y: (B, )
         :return:
         """
-        y = self.label_enc(y)
-        mean, log_std = self.encoder(x, y)
-        z = sample(mean, log_std)
-        z = self.decoder(z, y)
+        z, y, mean, log_std = self.encode(x, y)
+        z = self.decode(z, y)
         return z, mean, log_std
 
     @torch.no_grad()
