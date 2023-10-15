@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.basic import VAEEncoder, VAEDecoder, VAELoss
+from models.basic import VAEEncoder, VAEDecoder, VAELoss, UNetEncoder, UNetDecoder
 
 
 def sample(mu, log_std):
@@ -60,3 +60,25 @@ class CVAE(nn.Module):
 
     def loss(self, x, x_rec, mean, log_std, beta=1.0):
         return VAELoss(beta)(x, x_rec, mean, log_std)
+
+
+class UNet(nn.Module):
+    """
+    Args:
+        n_layers: the number of down-sample
+    """
+    def __init__(self, n_layers, in_channel, hidden_channels: list = None, out_channels=10, act_func='relu', bilinear=False):
+        super(UNet, self).__init__()
+        if hidden_channels is None:
+            n_layers = 4
+            hidden_channels = [64, 128, 256, 512, 1024]
+        self.encoder = UNetEncoder(n_layers, in_channel, hidden_channels, act_func, bilinear)
+        self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear)
+
+    def forward(self, x):
+        x_list = self.encoder(x)
+        out = self.decoder(x_list)
+        return out
+
+
+class 
