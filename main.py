@@ -54,6 +54,8 @@ parser.add_argument('--devices', type=str, default='0,1',
                     help='device ids of multile gpus')
 
 configs = parser.parse_args()
+save_id = f"{configs.model_type}_{configs.dataset}_model.pt"
+configs.save_id = save_id
 log_path = f"./results/{configs.version}/{configs.dataset}.log"
 configs.log_path = log_path
 results_path = f"./results/{configs.version}/{configs.dataset}.pdf"
