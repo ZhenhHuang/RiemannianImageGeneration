@@ -33,7 +33,7 @@ class TemporalUNet(nn.Module):
         """
 
     def __init__(self, n_layers, in_channel, hidden_channels: list = None, out_channels=10,
-                 time_channel=16, act_func='relu', bilinear=False):
+                 time_steps=10, time_channel=16, act_func='relu', bilinear=False):
         super(TemporalUNet, self).__init__()
         if hidden_channels is None:
             n_layers = 4
@@ -41,7 +41,8 @@ class TemporalUNet(nn.Module):
         in_channel = in_channel + time_channel
         self.encoder = UNetEncoder(n_layers, in_channel, hidden_channels, act_func, bilinear)
         self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear)
-        self.time_embedding = PositionalEmbedding(time_channel)
+        # self.time_embedding = PositionalEmbedding(time_channel)
+        self.time_embedding = nn.Embedding(time_steps, time_channel)
 
     def forward(self, t, x, y=None):
         """
