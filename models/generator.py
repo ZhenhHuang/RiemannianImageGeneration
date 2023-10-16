@@ -29,15 +29,15 @@ class Generator(nn.Module):
         self.configs = configs
         args = datasize[self.configs.dataset]
         if self.configs.model_type == 'vae_based':
-            self.model = CVAE(n_layers=self.configs.n_layers, n_classes=10, in_dim=args["in_dim"],
+            self.model = CVAE(n_layers=self.configs.n_layers, n_classes=args['n_class'], in_dim=args["in_dim"],
                               hidden_dims=self.configs.hidden_dims, out_dim=self.configs.out_dim,
                               cond_dim=self.configs.cond_dim, CHW=args['size'], act_func=self.configs.act_func)
         elif self.configs.model_type == 'flow_based':
             size = args['size']
             self.model = FlowMatching(
-                vector_field=TemporalUNet(n_layers=self.configs.n_layers, in_channel=size[0],
+                vector_field=TemporalUNet(n_layers=self.configs.n_layers, in_channel=size[0], n_classes=args['n_classes'],
                                         hidden_channels=self.configs.hidden_dims, out_channels=size[0],
-                                        time_steps=self.configs.ode_steps, time_channel=self.configs.time_dim,
+                                        cond_channel=self.configs.cond_dim, time_channel=self.configs.time_dim,
                                           act_func=self.configs.act_func, bilinear=False),
                 CHW=args['size'],
                 kappa=self.configs.kappa

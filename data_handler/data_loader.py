@@ -30,13 +30,12 @@ def load_CIFAR_10(configs, train=True, download=False, transform=None):
     if transform is None and train:
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.RandomRotation((-90, 90), interpolation=InterpolationMode.BILINEAR),
-            transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010]),
+            transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
         ])
     elif transform is None and not train:
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010]),
+            transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
         ])
     cifar_data_test = CIFAR(root_path, train=train, download=download, transform=transform)
     return cifar_data_test
