@@ -78,7 +78,7 @@ class Exp:
     def eval(self, test_labels):
         state_dict_path = f'./checkpoints/{self.configs.save_id}'
         state_dict = torch.load(state_dict_path)
-        model = Generator(self.configs).to(device)
+        model = Generator(self.configs).to(self.device)
         model.load_state_dict(state_dict)
         model.eval()
         visualize(model, test_labels, save_path=self.configs.results_path)
