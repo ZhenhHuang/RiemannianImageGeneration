@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.basic import VAEEncoder, VAEDecoder, VAELoss, UNetEncoder, UNetDecoder
+from models.basic import VAELoss, VAEEncoder, VAEDecoder
 from ode_solvers import integrator, solve_geodesic
-from layers import PositionalEmbedding
 
 
 def sample(mu, log_std):
@@ -64,63 +63,6 @@ class CVAE(nn.Module):
         return VAELoss(beta)(x, x_rec, mean, log_std)
 
 
-class UNet(nn.Module):
-    """
-    Args:
-        n_layers: the number of down-sample
-    """
-
-    def __init__(self, n_layers, in_channel, hidden_channels: list = None, out_channels=10,
-                 act_func='relu', bilinear=False):
-        super(UNet, self).__init__()
-        if hidden_channels is None:
-            n_layers = 4
-            hidden_channels = [64, 128, 256, 512, 1024]
-        self.encoder = UNetEncoder(n_layers, in_channel, hidden_channels, act_func, bilinear)
-        self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear)
-
-    def forward(self, x):
-        x_list = self.encoder(x)
-        out = self.decoder(x_list)
-        return out
-
-
-class TemporalUNet(nn.Module):
-    """
-        Args:
-            n_layers: the number of down-sample
-        """
-
-    def __init__(self, n_layers, in_channel, hidden_channels: list = None, out_channels=10,
-                 time_channel=16, act_func='relu', bilinear=False):
-        super(TemporalUNet, self).__init__()
-        if hidden_channels is None:
-            n_layers = 4
-            hidden_channels = [64, 128, 256, 512, 1024]
-        in_channel = in_channel + time_channel
-        self.encoder = UNetEncoder(n_layers, in_channel, hidden_channels, act_func, bilinear)
-        self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear)
-        self.time_embedding = PositionalEmbedding(time_channel)
-
-    def forward(self, t, x, y=None):
-        """
-
-        :param t: (T, ) -> (T, D_t) -> (T, 1, D_t, 1, 1)
-        :param x: (T, B, C, H, W)
-        :param y: None
-        :return: (T, B, C, H, W)
-        """
-        if t.dim() == 0:
-            t = t.unsqueeze(0)
-        if x.dim() == 4:
-            x = x.unsqueeze(0)
-        T, B, C, H, W = x.shape
-        t = self.time_embedding(t).unsqueeze(1).unsqueeze(-1).unsqueeze(-1).repeat(1, B, 1, H, W)
-        x_list = self.encoder(torch.concat([x, t], dim=-3).reshape(T*B, -1, H, W))
-        out = self.decoder(x_list).reshape(T, B, -1, H, W)
-        return out
-
-
 class FlowMatching(nn.Module):
     """
     Args:
@@ -132,36 +74,36 @@ class FlowMatching(nn.Module):
         self.kappa = torch.tensor(kappa)
         self.vector_field = vector_field
 
-    def forward(self, x, y=None, steps: int = 200):
+    def forward(self, x, y=None, ode_steps: int = 200):
         """
 
         :param x: (B, C, H, W)
         :param y: (B, )
-        :param steps: int
+        :param ode_steps: int
         :return: learned vector field, real vector field with shape (T, B, C, H, W)
         """
         self.size = x.shape[1:]
-        t = torch.linspace(0, 1, steps=steps).to(x.device)
+        t = torch.linspace(0, 1, steps=ode_steps).to(x.device)
         x1 = x
         x0 = torch.randn_like(x1).to(x.device)
         xt, dxt_dt = solve_geodesic(t, x0, x1, kappa=self.kappa)
         vt = self.vector_field(t, xt, y)
         return vt, dxt_dt
 
-    def loss(self, vt, dxt_dt):
+    def loss(self, x, vt, dxt_dt):
         return F.mse_loss(vt, dxt_dt)
 
     @torch.no_grad()
-    def generate(self, labels, dev_str='cuda:0', steps: int = 200, return_steps=False):
+    def generate(self, labels, dev_str='cuda:0', ode_steps: int = 200, return_steps=False):
         """
         :param return_steps: whether return path tracker
-        :param steps: ode solver steps
+        :param ode_steps: ode solver steps
         :param dev_str: device string, 'cpu' or 'cuda:{id}'
         :param labels: Tensor(B, )
         :return: z: (B, C, H, W)
         """
         device = torch.device(dev_str)
-        t = torch.linspace(0, 1, steps=steps).to(device)
+        t = torch.linspace(0, 1, steps=ode_steps).to(device)
         labels = labels.to(device)
         z = torch.randn(labels.shape[0], *self.size).to(device)
         xt, dxt_dt = integrator(lambda tt, xx: self.vector_field(tt, xx, labels), z, t, self.kappa)

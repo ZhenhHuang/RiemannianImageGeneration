@@ -2,9 +2,8 @@ import torch
 import numpy as np
 import torch.nn.functional as F
 import torch.nn as nn
-from models.model import CVAE
+from models.generator import Generator
 from data_handler.data_loader import getLoader
-from data_handler.dataset import datasize
 from logger import create_logger
 from utils import EarlyStopping, adjust_learning_rate
 import time
@@ -24,10 +23,7 @@ class Exp:
         device = self.device
         train_set, train_loader = getLoader(self.configs, flag='train')
         val_set, val_loader = getLoader(self.configs, flag='val')
-        args = datasize[self.configs.dataset]
-        model = CVAE(n_layers=self.configs.n_layers, n_classes=10, in_dim=args["in_dim"],
-                     hidden_dims=self.configs.hidden_dims, out_dim=self.configs.out_dim,
-                     cond_dim=self.configs.cond_dim, CWH=args['size'], act_func=self.configs.act_func).to(device)
+        model = Generator(self.configs).to(device)
         self.model = model
         optimizer = torch.optim.Adam(model.parameters(), lr=self.configs.lr, weight_decay=self.configs.w_decay)
         early_stopping = EarlyStopping(self.configs.patience)
@@ -43,8 +39,7 @@ class Exp:
                     image = image.unsqueeze(1)
                 image = image.float().to(device)
                 label = label.long().to(device)
-                output = model(image, label)
-                loss = model.loss(image, *output)
+                loss = model.loss(image, label)
                 losses.append(loss.item())
                 optimizer.zero_grad()
                 loss.backward()
@@ -74,8 +69,7 @@ class Exp:
                     image = image.unsqueeze(1)
                 image = image.float().to(device)
                 label = label.long().to(device)
-                output = model(image, label)
-                loss = model.loss(image, *output)
+                loss = model.loss(image, label)
                 losses.append(loss.detach().cpu().numpy())
         model.train()
         return np.mean(losses)
@@ -83,10 +77,7 @@ class Exp:
     def eval(self, test_labels):
         state_dict_path = f'./checkpoints/{self.configs.save_id}'
         state_dict = torch.load(state_dict_path)
-        args = datasize[self.configs.dataset]
-        model = CVAE(n_layers=self.configs.n_layers, n_classes=10, in_dim=args["in_dim"],
-                     hidden_dims=self.configs.hidden_dims, out_dim=self.configs.out_dim,
-                     cond_dim=self.configs.cond_dim, CWH=args['size'], act_func=self.configs.act_func).to(self.device)
+        model = Generator(self.configs).to(device)
         model.load_state_dict(state_dict)
         model.eval()
         visualize(model, test_labels, save_path=self.configs.results_path)
