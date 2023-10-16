@@ -37,7 +37,8 @@ class Generator(nn.Module):
             self.model = FlowMatching(
                 vector_field=TemporalUNet(n_layers=self.configs.n_layers, in_channel=size[0],
                                         hidden_channels=self.configs.hidden_dims, out_channels=size[0],
-                                        time_channel=self.configs.time_dim, act_func=self.configs.act_func, bilinear=False),
+                                        time_steps=self.configs.ode_steps, time_channel=self.configs.time_dim,
+                                          act_func=self.configs.act_func, bilinear=False),
                 CHW=args['size'],
                 kappa=self.configs.kappa
             )
