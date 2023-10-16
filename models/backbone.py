@@ -2,7 +2,7 @@ from models.basic import UNetEncoder, UNetDecoder
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.layers import PositionalEmbedding
+from models.layers import TimeEmbedding
 
 
 class UNet(nn.Module):
@@ -41,8 +41,7 @@ class TemporalUNet(nn.Module):
         in_channel = in_channel + time_channel
         self.encoder = UNetEncoder(n_layers, in_channel, hidden_channels, act_func, bilinear)
         self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear)
-        # self.time_embedding = PositionalEmbedding(time_channel)
-        self.time_embedding = nn.Embedding(time_steps, time_channel)
+        self.time_embedding = TimeEmbedding(time_channel, act_func=act_func)
 
     def forward(self, t, x, y=None):
         """

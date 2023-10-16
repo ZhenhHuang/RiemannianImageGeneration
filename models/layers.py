@@ -89,3 +89,19 @@ class PositionalEmbedding(nn.Module):
         emb = torch.outer(x * self.scale, emb)
         emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
         return emb
+
+
+class TimeEmbedding(nn.Module):
+    def __init__(self, dim, scale=1.0, act_func='relu'):
+        super(TimeEmbedding, self).__init__()
+        self.embedding = PositionalEmbedding(dim, scale)
+        self.w = nn.Sequential(
+            nn.Linear(dim, 2 * dim),
+            act_selector(act_func),
+            nn.Linear(2 * dim, dim)
+        )
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x = self.w(x)
+        return x
