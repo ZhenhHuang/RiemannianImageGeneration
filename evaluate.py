@@ -20,6 +20,22 @@ def visualize(model, labels, dev_str='cuda:0', figsize=(30, 30), save_path=None)
         plt.savefig(save_path)
 
 
+def visualize_process(model, labels, dev_str='cuda:0', figsize=(30, 30), ode_steps=10, save_path=None):
+    """Only for Flow-based model and Diffusion-based model"""
+    images, vec_field = model.generate(labels, dev_str, ode_steps, return_steps=True).permute(0, 1, 3, 4, 2)  # (T, B, W, H, C)
+    images = images.detach().cpu().numpy()
+    plt.figure(figsize=figsize)
+    row = len(labels)
+    col = ode_steps
+    for i in range(row):
+        for j in range(col):
+            ax = plt.subplot(row, col, (i + 1) * (j + 1))
+            ax.set_title(f"Class: {labels[i].item()}")
+            plt.imshow(images[j, i])
+    if save_path is not None:
+        plt.savefig(save_path)
+
+
 def interpolate(model, x_1, x_2, y_1=None, y_2=None, steps=10, dev_str='cuda:0', figsize=(30, 30), save_path=None):
     z_1, y_emb_1 = model.encode(x_1, y_1)[:2]  # (B, D)
     z_2, y_emb_2 = model.encode(x_2, y_2)[:2]
