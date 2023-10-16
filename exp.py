@@ -24,6 +24,11 @@ class Exp:
         train_set, train_loader = getLoader(self.configs, flag='train')
         val_set, val_loader = getLoader(self.configs, flag='val')
         model = Generator(self.configs).to(device)
+        if self.configs.is_pretrained:
+            logger.info("------------------Loading Pretrained Model--------------------")
+            state_dict_path = f'./checkpoints/{self.configs.save_id}'
+            state_dict = torch.load(state_dict_path)
+            model.load_state_dict(state_dict)
         self.model = model
         optimizer = torch.optim.Adam(model.parameters(), lr=self.configs.lr, weight_decay=self.configs.w_decay)
         early_stopping = EarlyStopping(self.configs.patience)

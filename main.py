@@ -25,6 +25,7 @@ parser.add_argument('--log_path', type=str, default="./results/v1.log")
 parser.add_argument('--num_workers', type=int, default=0)
 parser.add_argument('--download', type=bool, default=False)
 parser.add_argument('--results_path', type=str, default="results/result.png")
+parser.add_argument('--is_pretrained', type=bool, default=False)
 
 parser.add_argument('--model_type', type=str, default='vae_based', choices=['vae_based', 'flow_based'])
 parser.add_argument('--epochs', type=int, default=100)
@@ -45,7 +46,6 @@ parser.add_argument('--w_decay', type=float, default=1e-4)
 parser.add_argument('--kappa', type=float, default=0.0, help='curvature of simple manifolds')
 parser.add_argument('--beta', type=float, default=1.0, help='coefficient of Beta-VAE')
 parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')
-parser.add_argument('--learning_rate', type=float, default=1e-4)
 
 # GPU
 parser.add_argument('--use_gpu', action='store_false', help='use gpu')

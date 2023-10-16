@@ -40,7 +40,7 @@ class EarlyStopping:
 
 def adjust_learning_rate(optimizer, epoch, configs):
     if configs.lradj == 'type1':
-        lr_adjust = {epoch: configs.learning_rate * (0.5 ** (epoch // 1))}
+        lr_adjust = {epoch: configs.lr * (0.5 ** (epoch // 1))}
     else:
         raise NotImplementedError
     if epoch in lr_adjust.keys():
