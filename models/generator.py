@@ -16,7 +16,7 @@ def add_configs_params(func, args: dict, params: dict = None):
 
 def add_func_params_ordered(func, tuple_params, params: dict = None):
     sig = inspect.signature(func)
-    for i, key in enumerate(list(sig.parameters.keys())):
+    for i, key in enumerate(list(sig.parameters.keys())[len(params):]):
         params[key] = tuple_params[i]
     return params
 
