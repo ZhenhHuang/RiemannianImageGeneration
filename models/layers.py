@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from act_funcs import act_selector
+import math
 
 
 class Reshape(nn.Module):
@@ -71,3 +72,20 @@ class UpSample(nn.Module):
                             diff_H // 2, diff_H - diff_H // 2])
         x = torch.concat([x_2, x_1], dim=-3)
         return self.conv(x)
+
+
+class PositionalEmbedding(nn.Module):
+    def __init__(self, dim, scale=1.0):
+        super(PositionalEmbedding, self).__init__()
+        assert dim % 2 == 0
+        self.dim = dim
+        self.scale = scale
+
+    def forward(self, x):
+        device = x.device
+        half_dim = self.dim // 2
+        emb = math.log(10000) / half_dim
+        emb = torch.exp(torch.arange(half_dim, device=device) * -emb)
+        emb = torch.outer(x * self.scale, emb)
+        emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
+        return emb

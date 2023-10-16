@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from models.basic import VAEEncoder, VAEDecoder, VAELoss, UNetEncoder, UNetDecoder
 from ode_solvers import integrator, solve_geodesic
+from layers import PositionalEmbedding
 
 
 def sample(mu, log_std):
@@ -99,12 +100,12 @@ class TemporalUNet(nn.Module):
         in_channel = in_channel + time_channel
         self.encoder = UNetEncoder(n_layers, in_channel, hidden_channels, act_func, bilinear)
         self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear)
-        self.time_embedding = None
+        self.time_embedding = PositionalEmbedding(time_channel)
 
     def forward(self, t, x, y=None):
         """
 
-        :param t: (T, )
+        :param t: (T, ) -> (T, D_t) -> (T, 1, D_t, 1, 1)
         :param x: (T, B, C, H, W)
         :param y: None
         :return: (T, B, C, H, W)
@@ -114,9 +115,9 @@ class TemporalUNet(nn.Module):
         if x.dim() == 4:
             x = x.unsqueeze(0)
         T, B, C, H, W = x.shape
-        t = self.time_embedding(t)
-        x_list = self.encoder(torch.concat([x, t], dim=-1).reshape(-1, C, H, W))
-        out = self.decoder(x_list).reshape(T, B, C, H, W)
+        t = self.time_embedding(t).unsqueeze(1).unsqueeze(-1).unsqueeze(-1).repeat(1, B, 1, H, W)
+        x_list = self.encoder(torch.concat([x, t], dim=-3).reshape(T*B, -1, H, W))
+        out = self.decoder(x_list).reshape(T, B, -1, H, W)
         return out
 
 
@@ -128,7 +129,7 @@ class FlowMatching(nn.Module):
     """
     def __init__(self, vector_field, kappa=0.):
         super(FlowMatching, self).__init__()
-        self.kappa = torch.tensor(kappa).to(vector_field.device)
+        self.kappa = torch.tensor(kappa)
         self.vector_field = vector_field
 
     def forward(self, x, y=None, steps: int = 200):
@@ -162,9 +163,16 @@ class FlowMatching(nn.Module):
         device = torch.device(dev_str)
         t = torch.linspace(0, 1, steps=steps).to(device)
         labels = labels.to(device)
-        z = torch.randn(labels.shape[0], self.size).to(device)
+        z = torch.randn(labels.shape[0], *self.size).to(device)
         xt, dxt_dt = integrator(lambda tt, xx: self.vector_field(tt, xx, labels), z, t, self.kappa)
         if return_steps:
             return xt, dxt_dt
         else:
             return xt[-1]
+
+
+# if __name__ == '__main__':
+#     vf = TemporalUNet(4, 3, out_channels=3)
+#     model = FlowMatching(vf)
+#     x = torch.randn(2, 3, 32, 32)
+#     vt, dxt_dt = model(x)
