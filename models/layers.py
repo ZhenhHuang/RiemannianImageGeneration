@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from act_funcs import act_selector
+from models.act_funcs import act_selector
 import math
 
 

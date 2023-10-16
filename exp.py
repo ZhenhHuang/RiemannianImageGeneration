@@ -28,6 +28,7 @@ class Exp:
         optimizer = torch.optim.Adam(model.parameters(), lr=self.configs.lr, weight_decay=self.configs.w_decay)
         early_stopping = EarlyStopping(self.configs.patience)
         epochs = self.configs.epochs
+        logger.info("--------------------------Training Start-------------------------")
         for epoch in range(epochs):
             losses = []
             count = 0

@@ -60,5 +60,8 @@ def solve_geodesic(t, x0, x1, kappa):
         else:
             return expmap(x0, time * logmap(x0, x1, k=kappa, dim=-3), k=kappa, dim=-3)
     xt = geodesic(t)
-    dxt_dt = jacobian(geodesic, t).squeeze().sum(-1)    # (T, B, C, H, W)
+    if kappa == 0:
+        dxt_dt = (x1 - x0).repeat(t.shape[0], 1, 1, 1, 1)
+    else:
+        dxt_dt = jacobian(geodesic, t).squeeze().sum(-1)    # (T, B, C, H, W)
     return xt, dxt_dt

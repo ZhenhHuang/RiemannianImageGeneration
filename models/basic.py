@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from models.act_funcs import act_selector
-from layers import UpSample, DownSample, DoubleConv3x3
+from models.layers import UpSample, DownSample, DoubleConv3x3
 
 
 class VAEEncoder(nn.Module):

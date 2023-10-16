@@ -58,4 +58,3 @@ class Generator(nn.Module):
         params = {'labels': labels, 'dev_str': dev_str}
         params = add_configs_params(self.model.generate, vars(self.configs), params)
         return self.model.generate(**params)
-
