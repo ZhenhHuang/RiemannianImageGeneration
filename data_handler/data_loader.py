@@ -3,7 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import InterpolationMode
-from torchvision.datasets import MNIST, USPS
+from torchvision.datasets import MNIST, USPS, ImageNet
 import numpy as np
 import os
 from PIL import Image
@@ -58,8 +58,33 @@ def load_CIFAR_100(configs, train=True, download=False, transform=None):
             transforms.ToTensor(),
             transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010]),
         ])
-    cifar_data_test = CIFAR(root_path, train=train, download=download, transform=transform)
-    return cifar_data_test
+    cifar_data = CIFAR(root_path, train=train, download=download, transform=transform)
+    return cifar_data
+
+
+def load_ImageNet(configs, train=True, download=False, transform=None):
+    root_path = f"{configs.root_path}/"
+    if not os.path.exists(root_path):
+        os.mkdir(root_path)
+    if transform is None and train:
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.RandomRotation((-90, 90), interpolation=InterpolationMode.BILINEAR),
+            transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010]),
+        ])
+    elif transform is None and not train:
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize([0.4914, 0.4822, 0.4465], [0.2023, 0.1994, 0.2010]),
+        ])
+    if train:
+        split = 'train'
+    else:
+        split = 'val'
+    cifar_data = ImageNet(root_path, split=split, download=download, transform=transform)
+    return cifar_data
+
+
 
 
 def getLoader(configs, flag, transform=None):
@@ -86,10 +111,7 @@ def getLoader(configs, flag, transform=None):
 
 
 def getDataset(configs, train, transform):
-    if configs.dataset == 'caltech101':
-        return Caltech101(configs.root_path, configs.data_path, flag, configs.size, transform=transform)
-
-    elif configs.dataset in ['MNIST', 'USPS']:
+    if configs.dataset in ['MNIST', 'USPS']:
         return load_handwrite_digit(configs, train=train, download=configs.download)
 
     elif configs.dataset == 'cifar-10':
