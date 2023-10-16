@@ -29,7 +29,7 @@ class Generator(nn.Module):
         self.configs = configs
         args = datasize[self.configs.dataset]
         if self.configs.model_type == 'vae_based':
-            self.model = CVAE(n_layers=self.configs.n_layers, n_classes=args['n_class'], in_dim=args["in_dim"],
+            self.model = CVAE(n_layers=self.configs.n_layers, n_classes=args['n_classes'], in_dim=args["in_dim"],
                               hidden_dims=self.configs.hidden_dims, out_dim=self.configs.out_dim,
                               cond_dim=self.configs.cond_dim, CHW=args['size'], act_func=self.configs.act_func)
         elif self.configs.model_type == 'flow_based':
