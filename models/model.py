@@ -18,12 +18,12 @@ class CVAE(nn.Module):
     """
 
     def __init__(self, n_layers, n_classes, in_dim, hidden_dims: list, out_dim,
-                 cond_dim, CWH: tuple, act_func="relu"):
+                 cond_dim, CHW: tuple, act_func="relu"):
         super(CVAE, self).__init__()
-        assert in_dim == CWH[0] or in_dim == CWH[0] * CWH[1] * CWH[2]
+        assert in_dim == CHW[0] or in_dim == CHW[0] * CHW[1] * CHW[2]
         self.latent_dim = out_dim
         self.encoder = VAEEncoder(n_layers, in_dim, hidden_dims, out_dim, cond_dim, act_func)
-        self.decoder = VAEDecoder(n_layers, out_dim, hidden_dims[::-1], in_dim, cond_dim, CWH, act_func)
+        self.decoder = VAEDecoder(n_layers, out_dim, hidden_dims[::-1], in_dim, cond_dim, CHW, act_func)
         self.label_enc = nn.Embedding(n_classes, cond_dim)
 
     def encode(self, x, y=None):
@@ -69,10 +69,11 @@ class FlowMatching(nn.Module):
         vector_field(t, x, y: Optional = None): a network with input shape (T, ) + (T, B, C, H ,W)
         and output shape (T, B, C, H, W)
     """
-    def __init__(self, vector_field, kappa=0.):
+    def __init__(self, vector_field, CHW: tuple, kappa=0.):
         super(FlowMatching, self).__init__()
         self.kappa = torch.tensor(kappa)
         self.vector_field = vector_field
+        self.size = CHW
 
     def forward(self, x, y=None, ode_steps: int = 200):
         """
@@ -82,7 +83,6 @@ class FlowMatching(nn.Module):
         :param ode_steps: int
         :return: learned vector field, real vector field with shape (T, B, C, H, W)
         """
-        self.size = x.shape[1:]
         t = torch.linspace(0, 1, steps=ode_steps).to(x.device)
         x1 = x
         x0 = torch.randn_like(x1).to(x.device)
