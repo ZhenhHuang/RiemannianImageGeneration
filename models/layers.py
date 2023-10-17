@@ -107,7 +107,7 @@ class UpSample(nn.Module):
         x_1 = F.pad(x_1, pad=[diff_W // 2, diff_W - diff_W // 2,
                             diff_H // 2, diff_H - diff_H // 2])
         if self.use_attn:
-            x_2 = self.atten_block(x_1, x_2)
+            x_2 = self.attn_block(x_1, x_2)
         x = torch.concat([x_2, x_1], dim=-3)
         return self.conv(x)
 
