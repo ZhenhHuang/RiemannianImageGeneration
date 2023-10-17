@@ -33,7 +33,7 @@ def vector_field(configs, img_args):
                                           use_attn=configs.use_attn)
     elif configs.vector_field == 'mlp':
         return TemporalMLP(n_layers=configs.n_layers, in_dim=img_args["in_dim"], n_classes=img_args['n_classes'],
-                                        hidden_dims=configs.hidden_dims,
+                                        hidden_dims=configs.hidden_dims, out_dim=img_args["in_dim"],
                                         cond_dim=configs.cond_dim, time_channel=configs.time_dim,
                                         act_func=configs.act_func)
 
