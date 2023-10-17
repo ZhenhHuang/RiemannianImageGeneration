@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 def visualize(model, labels, dev_str='cuda:0', figsize=(30, 30), save_path=None):
-    images = model.generate(labels, dev_str).permute(0, 2, 3, 1) * 0.5 + 0.5   # (B, W, H, C)
+    images = model.generate(labels, dev_str).permute(0, 2, 3, 1) * 0.5 + 0.5  # (B, W, H, C)
     images = images.detach().cpu().numpy()
     if images.shape[-1] == 1:
         cmap = 'gray'
@@ -17,7 +17,7 @@ def visualize(model, labels, dev_str='cuda:0', figsize=(30, 30), save_path=None)
     num = len(labels)
     row = int(np.sqrt(num)) + 1
     for i in range(num):
-        ax = plt.subplot(row, row, i+1)
+        ax = plt.subplot(row, row, i + 1)
         ax.set_title(f"Class: {labels[i].item()}")
         plt.imshow(images[i].clip(0, 1), cmap=cmap)
     if save_path is not None:
@@ -35,9 +35,9 @@ def visualize_process(model, labels, dev_str='cuda:0', figsize=(30, 30), ode_ste
         cmap = None
     row = len(labels)
     col = ode_steps
-    fig, axs = plt.subplots(row, col, figsize=figsize)
+    fig, axs = plt.subplots(row, col, figsize=(3 * col, 3 * row), sharex=True, sharey=True)
     for i in range(row):
-        axs[i][0].set_title(f"Class: {labels[i].item()}")
+        axs[i][0].set_ylabel(f"Class: {labels[i].item()}")
         for j in range(col):
             axs[i][j].imshow(images[j, i], cmap=cmap)
     if save_path is not None:
