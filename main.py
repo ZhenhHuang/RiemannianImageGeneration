@@ -15,10 +15,10 @@ np.random.seed(seed)
 parser = argparse.ArgumentParser(description='ImageGeneration')
 
 # Experiment settings
-parser.add_argument('--dataset', type=str, default='USPS')
+parser.add_argument('--dataset', type=str, default='MNIST')
 parser.add_argument('--root_path', type=str, default='C:/Users/98311/Desktop/dataset/Images')
 parser.add_argument('--training', type=bool, default=True)
-parser.add_argument('--batch_size', type=int, default=10)
+parser.add_argument('--batch_size', type=int, default=100)
 parser.add_argument('--verbose_freq', type=int, default=100)
 parser.add_argument('--version', type=str, default="run")
 parser.add_argument('--log_path', type=str, default="./results/v1.log")
@@ -32,17 +32,17 @@ parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--patience', type=int, default=3)
 parser.add_argument('--save_id', type=str, default='model.pt')
 parser.add_argument('--pre_epochs', type=int, default=10)
-parser.add_argument('--n_layers', type=int, default=4)
+parser.add_argument('--n_layers', type=int, default=1)
 parser.add_argument('--act_func', type=str, default='swish')
-parser.add_argument('--hidden_dims', type=int, nargs='+', default=[64, 128, 256, 512, 1024], help='dimension of hidden layers')
+parser.add_argument('--hidden_dims', type=int, nargs='+', default=[32, 64], help='dimension of hidden layers')
 parser.add_argument('--out_dim', type=int, default=10, help='dimension of latent space')
 parser.add_argument('--cond_dim', type=int, default=16, help='dimension of embedding labels')
 parser.add_argument('--time_dim', type=int, default=16, help='dimension of time embeddings')
-parser.add_argument('--ode_steps', type=int, default=10, help='steps for solving ode')
+parser.add_argument('--ode_steps', type=int, default=5, help='steps for solving ode')
 parser.add_argument('--return_steps', type=bool, default=False)
 parser.add_argument('--bilinear', type=bool, default=False)
 parser.add_argument('--use_attn', type=bool, default=True)
-parser.add_argument('--lr', type=float, default=0.001)
+parser.add_argument('--lr', type=float, default=0.005)
 parser.add_argument('--w_decay', type=float, default=1e-4)
 parser.add_argument('--kappa', type=float, default=0.0, help='curvature of simple manifolds')
 parser.add_argument('--beta', type=float, default=1.0, help='coefficient of Beta-VAE')
@@ -59,7 +59,7 @@ save_id = f"{configs.model_type}_{configs.dataset}_model.pt"
 configs.save_id = save_id
 log_path = f"./results/{configs.version}/{configs.dataset}.log"
 configs.log_path = log_path
-results_path = f"./results/{configs.version}/{configs.dataset}.pdf"
+results_path = f"./results/{configs.version}/{configs.model_type}_{configs.dataset}"
 configs.results_path = results_path
 if not os.path.exists(f"./results"):
     os.mkdir("./results")
@@ -73,7 +73,8 @@ exp = Exp(configs)
 if configs.training:
     exp.train()
 logger.info("--------------------------Evaluating Start-------------------------")
-test_labels = torch.randint(0, 10, (16,))
+# test_labels = torch.randint(0, 10, (16,))
+test_labels = torch.arange(0, 10)
 logger.info(f"Generating class of {test_labels}")
 exp.eval(test_labels)
 torch.cuda.empty_cache()
