@@ -71,13 +71,9 @@ class UNetEncoder(nn.Module):
     def __init__(self, n_layers, in_channel, hidden_channels: list = None, act_func='relu', bilinear=False):
         super(UNetEncoder, self).__init__()
         assert n_layers == len(hidden_channels) - 1
-        factor = 2 if bilinear else 1
         self.layers = nn.ModuleList([DoubleConv3x3(in_channel, hidden_channels[0], act_func=act_func)])
         for i in range(n_layers):
-            if i == (n_layers - 1):
-                self.layers.append(DownSample(hidden_channels[i], hidden_channels[i + 1] // factor, act_func=act_func))
-            else:
-                self.layers.append(DownSample(hidden_channels[i], hidden_channels[i + 1], act_func=act_func))
+            self.layers.append(DownSample(hidden_channels[i], hidden_channels[i + 1], act_func=act_func))
 
     def forward(self, x):
         """
@@ -93,18 +89,14 @@ class UNetEncoder(nn.Module):
 
 
 class UNetDecoder(nn.Module):
-    def __init__(self, n_layers, hidden_channels: list = None, out_channels=10, act_func='relu', bilinear=False):
+    def __init__(self, n_layers, hidden_channels: list = None, out_channels=10,
+                 act_func='relu', bilinear=False, use_attn=True):
         super(UNetDecoder, self).__init__()
         assert n_layers == len(hidden_channels) - 1
-        factor = 2 if bilinear else 1
         self.layers = nn.ModuleList()
         for i in range(n_layers):
-            if i == (n_layers - 1):
-                self.layers.append(UpSample(hidden_channels[i], hidden_channels[i + 1],
-                                            act_func=act_func, bilinear=bilinear))
-            else:
-                self.layers.append(UpSample(hidden_channels[i], hidden_channels[i + 1] // factor,
-                                            act_func=act_func, bilinear=bilinear))
+            self.layers.append(UpSample(hidden_channels[i], hidden_channels[i + 1],
+                                        act_func=act_func, bilinear=bilinear, use_attn=use_attn))
         self.layers.append(nn.Conv2d(hidden_channels[-1], out_channels, kernel_size=1))
 
     def forward(self, x_list):

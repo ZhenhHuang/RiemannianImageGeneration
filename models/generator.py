@@ -38,7 +38,8 @@ class Generator(nn.Module):
                 vector_field=TemporalUNet(n_layers=self.configs.n_layers, in_channel=size[0], n_classes=args['n_classes'],
                                         hidden_channels=self.configs.hidden_dims, out_channels=size[0],
                                         cond_channel=self.configs.cond_dim, time_channel=self.configs.time_dim,
-                                          act_func=self.configs.act_func, bilinear=False),
+                                          act_func=self.configs.act_func, bilinear=self.configs.bilinear,
+                                          use_attn=self.configs.use_attn),
                 CHW=args['size'],
                 kappa=self.configs.kappa
             )

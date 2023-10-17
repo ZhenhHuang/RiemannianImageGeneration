@@ -114,7 +114,8 @@ class FlowMatching(nn.Module):
 
 
 # if __name__ == '__main__':
-#     vf = TemporalUNet(4, 3, out_channels=3)
+#     from models.backbone import TemporalUNet
+#     vf = TemporalUNet(4, 3, n_classes=5, out_channels=3)
 #     model = FlowMatching(vf)
 #     x = torch.randn(2, 3, 32, 32)
 #     vt, dxt_dt = model(x)

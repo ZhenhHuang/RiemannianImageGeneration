@@ -12,13 +12,13 @@ class UNet(nn.Module):
     """
 
     def __init__(self, n_layers, in_channel, hidden_channels: list = None, out_channels=10,
-                 act_func='relu', bilinear=False):
+                 act_func='relu', bilinear=False, use_attn=True):
         super(UNet, self).__init__()
         if hidden_channels is None:
             n_layers = 4
             hidden_channels = [64, 128, 256, 512, 1024]
         self.encoder = UNetEncoder(n_layers, in_channel, hidden_channels, act_func, bilinear)
-        self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear)
+        self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear, use_attn)
 
     def forward(self, x):
         x_list = self.encoder(x)
@@ -33,14 +33,14 @@ class TemporalUNet(nn.Module):
         """
 
     def __init__(self, n_layers, in_channel, n_classes, hidden_channels: list = None, out_channels=10,
-                 cond_channel=16, time_channel=16, act_func='relu', bilinear=False):
+                 cond_channel=16, time_channel=16, act_func='relu', bilinear=False, use_attn=True):
         super(TemporalUNet, self).__init__()
         if hidden_channels is None:
             n_layers = 4
             hidden_channels = [64, 128, 256, 512, 1024]
         in_channel = in_channel + time_channel + cond_channel
         self.encoder = UNetEncoder(n_layers, in_channel, hidden_channels, act_func, bilinear)
-        self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear)
+        self.decoder = UNetDecoder(n_layers, hidden_channels[::-1], out_channels, act_func, bilinear, use_attn)
         self.time_embedding = TimeEmbedding(time_channel, act_func=act_func)
         self.label_embedding = nn.Embedding(n_classes, cond_channel)
 
