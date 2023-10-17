@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 from models.model import CVAE, FlowMatching
-from models.backbone import TemporalUNet
+from models.backbone import TemporalUNet, TemporalMLP
 from data_handler.dataset import datasize
 import inspect
 
@@ -23,6 +23,21 @@ def add_func_params_ordered(func, tuple_params, params: dict = None):
     return params
 
 
+def vector_field(configs, img_args):
+    size = img_args['size']
+    if configs.vector_field == 'unet':
+        return TemporalUNet(n_layers=configs.n_layers, in_channel=size[0], n_classes=img_args['n_classes'],
+                                        hidden_channels=configs.hidden_dims, out_channels=size[0],
+                                        cond_channel=configs.cond_dim, time_channel=configs.time_dim,
+                                          act_func=configs.act_func, bilinear=configs.bilinear,
+                                          use_attn=configs.use_attn)
+    elif configs.vector_field == 'mlp':
+        return TemporalMLP(n_layers=configs.n_layers, in_dim=img_args["in_dim"], n_classes=img_args['n_classes'],
+                                        hidden_dims=configs.hidden_dims,
+                                        cond_dim=configs.cond_dim, time_channel=configs.time_dim,
+                                        act_func=configs.act_func)
+
+
 class Generator(nn.Module):
     def __init__(self, configs):
         super(Generator, self).__init__()
@@ -33,13 +48,8 @@ class Generator(nn.Module):
                               hidden_dims=self.configs.hidden_dims, out_dim=self.configs.out_dim,
                               cond_dim=self.configs.cond_dim, CHW=args['size'], act_func=self.configs.act_func)
         elif self.configs.model_type == 'flow_based':
-            size = args['size']
             self.model = FlowMatching(
-                vector_field=TemporalUNet(n_layers=self.configs.n_layers, in_channel=size[0], n_classes=args['n_classes'],
-                                        hidden_channels=self.configs.hidden_dims, out_channels=size[0],
-                                        cond_channel=self.configs.cond_dim, time_channel=self.configs.time_dim,
-                                          act_func=self.configs.act_func, bilinear=self.configs.bilinear,
-                                          use_attn=self.configs.use_attn),
+                vector_field=vector_field(configs, args),
                 CHW=args['size'],
                 kappa=self.configs.kappa
             )
