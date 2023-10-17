@@ -26,16 +26,20 @@ def visualize(model, labels, dev_str='cuda:0', figsize=(30, 30), save_path=None)
 
 def visualize_process(model, labels, dev_str='cuda:0', figsize=(30, 30), ode_steps=10, save_path=None):
     """Only for Flow-based model and Diffusion-based model"""
-    images, vec_field = model.generate(labels, dev_str, ode_steps, return_steps=True).permute(0, 1, 3, 4, 2)  # (T, B, W, H, C)
+    images, vec_field = model.model.generate(labels, dev_str, ode_steps, return_steps=True)
+    images = images.permute(0, 1, 3, 4, 2) * 0.5 + 0.5  # (T, B, W, H, C)
     images = images.detach().cpu().numpy()
-    plt.figure(figsize=figsize)
+    if images.shape[-1] == 1:
+        cmap = 'gray'
+    else:
+        cmap = None
     row = len(labels)
     col = ode_steps
+    fig, axs = plt.subplots(row, col, figsize=figsize)
     for i in range(row):
+        axs[i][0].set_title(f"Class: {labels[i].item()}")
         for j in range(col):
-            ax = plt.subplot(row, col, (i + 1) * (j + 1))
-            ax.set_title(f"Class: {labels[i].item()}")
-            plt.imshow(images[j, i])
+            axs[i][j].imshow(images[j, i], cmap=cmap)
     if save_path is not None:
         plt.savefig(save_path)
 

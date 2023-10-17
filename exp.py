@@ -7,7 +7,7 @@ from data_handler.data_loader import getLoader
 from logger import create_logger
 from utils import EarlyStopping, adjust_learning_rate
 import time
-from evaluate import visualize
+from evaluate import visualize, visualize_process
 
 
 class Exp:
@@ -86,4 +86,7 @@ class Exp:
         model = Generator(self.configs).to(self.device)
         model.load_state_dict(state_dict)
         model.eval()
-        visualize(model, test_labels, save_path=self.configs.results_path)
+        visualize(model, test_labels, save_path=self.configs.results_path+'.pdf')
+        if self.configs.model_type == 'flow_based':
+            visualize_process(model, test_labels, ode_steps=self.configs.ode_steps,
+                              save_path=self.configs.results_path + '_steps.pdf')
